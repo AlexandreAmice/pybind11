@@ -880,7 +880,11 @@ struct type_caster<Type, enable_if_t<is_eigen_sparse<Type>::value>> {
     }
 
     static handle cast(const Type &src, return_value_policy /* policy */, handle /* parent */) {
-        const_cast<Type &>(src).makeCompressed();
+        if constexpr (!std::is_same_v<Type, Eigen::SparseVector) {
+            const_cast<Type &>(src).makeCompressed();
+        // use type specific operations... 
+        } 
+        
 
         object matrix_type
             = module_::import("scipy.sparse").attr(rowMajor ? "csr_matrix" : "csc_matrix");
